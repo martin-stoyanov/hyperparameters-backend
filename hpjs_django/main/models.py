@@ -8,7 +8,7 @@ class Trial(models.Model):
   trial = models.IntegerField()
   start_time = models.DateTimeField()
   end_time = models.DateTimeField()
-  accuracy = models.FloatField
+  accuracy = models.FloatField()
   hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE)
 
 class Parameter(models.Model):
