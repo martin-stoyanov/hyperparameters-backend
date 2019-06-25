@@ -9,13 +9,13 @@ class Trial(models.Model):
   start_time = models.DateTimeField()
   end_time = models.DateTimeField()
   accuracy = models.FloatField()
-  hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE)
+  hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE, related_name="trials")
 
 class Parameter(models.Model):
   parameter_name = models.CharField(max_length=50)
-  hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE)
+  hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE, related_name="parameters")
 
 class ParameterValue(models.Model):
   value = models.CharField(max_length=50)
-  trial = models.ForeignKey(Trial, on_delete=models.CASCADE)
-  parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE)
+  trial = models.ForeignKey(Trial, on_delete=models.CASCADE, related_name="parameter_value")
+  parameter = models.ForeignKey(Parameter, on_delete=models.CASCADE, related_name="parameter_value")
