@@ -18,27 +18,34 @@ class ParameterValueType(DjangoObjectType):
   class Meta:
     model = ParameterValue
 
+class TrialInputType(graphene.InputObjectType):
+  trial = graphene.Int()
+  start_time = graphene.DateTime()
+  end_time = graphene.DateTime()
+  accuracy = graphene.Float()
 
 class ModelAddMutation(graphene.Mutation):
   class Arguments:
     # The input arguments for this mutation
     name = graphene.String(required=True)
-    trials = graphene.List(TrialType)
-    parameters = graphene.List(ParameterType)
-    parametervalues = graphene.List(ParameterValueType)
-
+    trials = graphene.List(TrialInputType)
+    
   # The class attributes define the response of the mutation
   hpjs_model = graphene.Field(ModelType)
-  trial = graphene.Field(ModelType)
-  parameter = graphene.Field(ModelType)
-  parametervalue = graphene.Field(ModelType)
 
-  def mutate(self, info, name):
-    print(name)
+  def mutate(self, info, name, trials):
     model = HPJS_Model(name=name)
     model.save()
+
+    for trial in trials:
+      t = Trial(trial=trial.trial, start_time=trial.start_time, end_time=trial.end_time, 
+        accuracy=trial.accuracy, hpjs_model=model)
+      t.save()
+
     # Notice we return an instance of this mutation
     return ModelAddMutation(hpjs_model=model)
+    #return ModelAddMutation(hpjs_model=model, trial=trial1, parameter=parameter1,
+    #  parametervalue=parametervalue1)
 
 class ModelDeleteMutation(graphene.Mutation):
   class Arguments:
