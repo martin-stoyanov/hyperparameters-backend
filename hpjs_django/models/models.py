@@ -12,7 +12,7 @@ class Trial(models.Model):
   hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE, related_name="trials")
 
 class Parameter(models.Model):
-  parameter_name = models.CharField(max_length=50)
+  name = models.CharField(max_length=50)
   hpjs_model = models.ForeignKey(HPJS_Model, on_delete=models.CASCADE, related_name="parameters")
 
 class ParameterValue(models.Model):

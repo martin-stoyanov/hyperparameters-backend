@@ -2,6 +2,7 @@ import graphene
 from graphene_django.types import DjangoObjectType
 from .models import HPJS_Model, Trial, Parameter, ParameterValue
 
+# defining return types
 class ModelType(DjangoObjectType):
   class Meta:
     model = HPJS_Model
@@ -18,22 +19,33 @@ class ParameterValueType(DjangoObjectType):
   class Meta:
     model = ParameterValue
 
+# defining input types
 class TrialInputType(graphene.InputObjectType):
   trial = graphene.Int()
   start_time = graphene.DateTime()
   end_time = graphene.DateTime()
   accuracy = graphene.Float()
 
+class ParameterInputType(graphene.InputObjectType):
+  name = graphene.String()
+
+class ParameterValueInputType(graphene.InputObjectType):
+  value = graphene.String()
+  trial = graphene.Int(required=True)
+  parameter_name = graphene.String(required=True)
+
 class ModelAddMutation(graphene.Mutation):
   class Arguments:
-    # The input arguments for this mutation
+    # The input arguments for the mutation
     name = graphene.String(required=True)
     trials = graphene.List(TrialInputType)
+    parameters = graphene.List(ParameterInputType)
+    parameter_values = graphene.List(ParameterValueInputType)
     
   # The class attributes define the response of the mutation
   hpjs_model = graphene.Field(ModelType)
 
-  def mutate(self, info, name, trials):
+  def mutate(self, info, name, trials, parameters, parameter_values):
     model = HPJS_Model(name=name)
     model.save()
 
@@ -41,6 +53,26 @@ class ModelAddMutation(graphene.Mutation):
       t = Trial(trial=trial.trial, start_time=trial.start_time, end_time=trial.end_time, 
         accuracy=trial.accuracy, hpjs_model=model)
       t.save()
+
+    for parameter in parameters:
+      p = Parameter(name=parameter.name, hpjs_model=model)
+      p.save()
+
+    for parameter_value in parameter_values:
+      t = None
+      for trial in model.trials.all():
+        if trial.trial == parameter_value.trial:  
+          t = trial
+          break
+
+      p = None
+      for parameter in model.parameters.all():
+        if parameter.name == parameter_value.parameter_name:  
+          p = parameter
+          break
+
+      pv = ParameterValue(value=parameter_value.value, trial=t, parameter=p)
+      pv.save()
 
     # Notice we return an instance of this mutation
     return ModelAddMutation(hpjs_model=model)
@@ -79,12 +111,13 @@ class ModelQuery(object):
   def resolve_model(self, info, **kwargs):
     id = kwargs.get('id')
     name = kwargs.get('name')
+    query = HPJS_Model.objects.prefetch_related('trials').prefetch_related('parameters')
 
     if id is not None:
-            return HPJS_Model.objects.get(pk=id)
+      return query.get(pk=id)
 
     if name is not None:
-        return HPJS_Model.objects.get(name=name)
+      return query.get(name=name)
 
     return None
 

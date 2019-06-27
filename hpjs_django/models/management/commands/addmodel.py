@@ -22,7 +22,7 @@ class Command(BaseCommand):
     trial1.save()
 
     # adding parameter value and linking it to the model
-    parameter1 = Parameter(parameter_name="modelType", hpjs_model=model1)
+    parameter1 = Parameter(name="modelType", hpjs_model=model1)
     parameter1.save()
 
     # adding parameter value and linking it to the parameter and trial
