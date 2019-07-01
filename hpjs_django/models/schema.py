@@ -93,10 +93,29 @@ class ModelDeleteMutation(graphene.Mutation):
     # Notice we return an instance of this mutation
     return ModelDeleteMutation(id=id)
 
+class ModelEditMutation(graphene.Mutation):
+  class Arguments:
+    # The input arguments for the mutation
+    id = graphene.Int(required=True)
+    trials = graphene.List(TrialInputType)
+
+  hpjs_model = graphene.Field(ModelType)
+
+  def mutate(self, info, id, trials):
+    model = HPJS_Model.objects.get(id=id)
+    model.save()
+
+    for trial in trials:
+      t = Trial(trial=trial.trial, start_time=trial.start_time, end_time=trial.end_time, 
+        accuracy=trial.accuracy, hpjs_model=model)
+      t.save()
+
+    return ModelEditMutation(hpjs_model=model)
 
 class ModelMutation:
     add_model = ModelAddMutation.Field()
     delete_model = ModelDeleteMutation.Field()
+    edit_model = ModelEditMutation.Field()
 
 class ModelQuery(object):
   model = graphene.Field(ModelType,
