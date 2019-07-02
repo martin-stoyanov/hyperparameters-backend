@@ -103,7 +103,12 @@ class ModelEditMutation(graphene.Mutation):
 
   def mutate(self, info, id, trials):
     model = HPJS_Model.objects.get(id=id)
-    model.save()
+    
+
+    #ts = Trial.objects.get(hpjs_model=model)
+    ts = Trial.objects.select_related('hpjs_model').all()
+    ts.delete()
+
 
     for trial in trials:
       t = Trial(trial=trial.trial, start_time=trial.start_time, end_time=trial.end_time, 
