@@ -141,7 +141,7 @@ class ModelEditMutation(graphene.Mutation):
           break
 
       pv = ParameterValue(value=parameter_value.value, trial=t, parameter=p)
-      pv.save()
+      pv.save()a
 
     return ModelEditMutation(hpjs_model=model)
 
