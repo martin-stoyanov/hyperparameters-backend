@@ -97,23 +97,51 @@ class ModelEditMutation(graphene.Mutation):
   class Arguments:
     # The input arguments for the mutation
     id = graphene.Int(required=True)
-    trials = graphene.List(TrialInputType)
+    trials = graphene.List(TrialInputType, required=False)
+    parameters = graphene.List(ParameterInputType, required=False)
+    parameter_values = graphene.List(ParameterValueInputType)
 
   hpjs_model = graphene.Field(ModelType)
 
-  def mutate(self, info, id, trials):
+  def mutate(self, info, id, trials, parameters, parameter_values):
     model = HPJS_Model.objects.get(id=id)
     
-
-    #ts = Trial.objects.get(hpjs_model=model)
-    ts = Trial.objects.select_related('hpjs_model').all()
-    ts.delete()
-
+    # deleting previous trials before adding the new ones
+    previous_trials = Trial.objects.select_related('hpjs_model').all()
+    previous_trials.delete()
 
     for trial in trials:
       t = Trial(trial=trial.trial, start_time=trial.start_time, end_time=trial.end_time, 
         accuracy=trial.accuracy, hpjs_model=model)
       t.save()
+
+    # deleting previous parameters before adding the new ones
+    previous_parameters = Parameter.objects.select_related('hpjs_model').all()
+    previous_parameters.delete()
+
+    for parameter in parameters:
+      p = Parameter(name=parameter.name, hpjs_model=model)
+      p.save()
+
+    # deleting previous parameter values before adding the new ones
+    previous_parameter_values = ParameterValue.objects.select_related('hpjs_model').all()
+    previous_parameter_values.delete()
+
+    for parameter_value in parameter_values:
+      t = None
+      for trial in model.trials.all():
+        if trial.trial == parameter_value.trial:  
+          t = trial
+          break
+
+      p = None
+      for parameter in model.parameters.all():
+        if parameter.name == parameter_value.parameter_name:  
+          p = parameter
+          break
+
+      pv = ParameterValue(value=parameter_value.value, trial=t, parameter=p)
+      pv.save()
 
     return ModelEditMutation(hpjs_model=model)
 
