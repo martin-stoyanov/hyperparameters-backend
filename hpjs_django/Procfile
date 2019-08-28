@@ -1,1 +1,0 @@
-web: gunicorn hpjs_django.wsgi --log-file -
