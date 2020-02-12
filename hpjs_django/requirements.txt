@@ -1,6 +1,6 @@
 aniso8601==6.0.0
 astroid==2.2.5
-Django==2.2.1
+Django==2.2.10
 django-cors-headers==3.0.2
 ez-setup==0.9
 graphene==2.1.6
